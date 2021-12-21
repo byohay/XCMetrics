@@ -50,7 +50,8 @@ func routes(_ app: Application) throws {
     try app.register(collection: UploadMetricsController(fileLogRepository: logFileRepository,
                                                          redactUserData: config.redactUserData,
                                                          metricsRepository: PostgreSQLMetricsRepository(db: app.db, logger: app.logger),
-                                                         useAsyncProcessing: config.useAsyncLogProcessing))
+                                                         useAsyncProcessing: config.useAsyncLogProcessing,
+                                                         startAsyncJobsInSameInstance: config.startAsyncJobsInSameInstance))
     try app.register(collection: JobLogController(repository: PostgreSQLJobLogRepository(db: app.db)))
     try app.register(collection: StatisticsController(repository: SQLStatisticsRepository(db: app.db)))
 

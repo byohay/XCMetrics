@@ -28,12 +28,15 @@ public struct UploadMetricsController: RouteCollection {
     let redactUserData: Bool
     let metricsRepository: MetricsRepository
     let useAsyncProcessing: Bool
+    let startAsyncJobsInSameInstance: Bool
 
-    init(fileLogRepository: LogFileRepository, redactUserData: Bool, metricsRepository: MetricsRepository, useAsyncProcessing: Bool) {
+    init(fileLogRepository: LogFileRepository, redactUserData: Bool, metricsRepository: MetricsRepository, useAsyncProcessing: Bool,
+         startAsyncJobsInSameInstance: Bool) {
         self.fileLogRepository = fileLogRepository
         self.redactUserData = redactUserData
         self.metricsRepository = metricsRepository
         self.useAsyncProcessing = useAsyncProcessing
+        self.startAsyncJobsInSameInstance = startAsyncJobsInSameInstance
     }
 
     public func boot(routes: RoutesBuilder) throws {
@@ -41,7 +44,8 @@ public struct UploadMetricsController: RouteCollection {
         if useAsyncProcessing {
             builds.on(.PUT, "metrics", body: .collect(maxSize: Self.MAX_PAYLOAD_SIZE), use: create)
         }
-        builds.on(.PUT, "metrics-sync", body: .collect(maxSize: Self.MAX_PAYLOAD_SIZE), use: createSync)
+        builds.on(.PUT, "metrics-sync", body: .collect(maxSize: Self.MAX_PAYLOAD_SIZE),
+                  use: startAsyncJobsInSameInstance ? createSync : create)
     }
 
     /// Gets a Request to process a Log and enqueues it to be processed by `ProcessMetricsJob` asynchronously.
